@@ -45,7 +45,7 @@ MONGODB_SERVER = @yourmongodbaddress
 ```bash
 python3 bot.py
 ```
-If you want to run the bot with in the background you can do:
+If you want to run the bot in the background you can do:
 ```bash
 nohup python3 bot.py &
 ```
