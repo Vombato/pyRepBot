@@ -156,7 +156,7 @@ def main() -> None:
     
     dispatcher.add_handler(CommandHandler("classifica", leaderboardCommand))
 
-    dispatcher.add_handler(CommandHandler("addMauritioAdmin", addAdminCommand))
+    dispatcher.add_handler(CommandHandler("addAdmin", addAdminCommand))
 
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, checkifRepMsg))
     # Start the Bot
