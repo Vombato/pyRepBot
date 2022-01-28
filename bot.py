@@ -21,6 +21,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+OWNER_ID = os.environ.get('OWNER_ID')
+
 MONGODB_USER = os.environ.get('MONGODB_USER')
 MONGODB_PSW = os.environ.get('MONGODB_PSW')
 MONGODB_SERVER = os.environ.get('MONGODB_SERVER')
@@ -66,6 +68,14 @@ def getLeaderboard():
     res = db.find().sort("rep", -1)
     return res
 
+def checkAdmin(id):
+    res = client.repbot.admins.find_one({"user_id": id})
+    if res is not None:
+        return True
+    return False
+
+def addAdmin(id, name):
+    client.repbot.admins.insert_one({"user_id": id, "name": name})
 
 def initAdmins():
     res = client.repbot.admins.find()
@@ -74,6 +84,7 @@ def initAdmins():
         print("Caricato admin: "+ i["name"] +" - "+ i["user_id"])
         admins.append(i["user_id"])
 
+# Commands
 
 def leaderboardCommand(update: Update, context: CallbackContext) -> None:
     sender = str(update.message.from_user.id)
@@ -82,9 +93,28 @@ def leaderboardCommand(update: Update, context: CallbackContext) -> None:
         if admin == sender:
             elems = getLeaderboard()
             msg = "Classifica Reputazione\n\n"
-            for elem in elems:
-                msg = msg + str(elem["name"]) + "  ✨Punteggio: " + str(elem["rep"])+"\n"
+            count = 1
+            for elem in elems[:10]:
+                msg = msg +str(count)+". "+str(elem["name"]) + "  ✨Punteggio: " + str(elem["rep"])+"\n"
+                count = count + 1
             update.message.reply_text(msg)
+
+
+def addAdminCommand(update: Update, context: CallbackContext) -> None:
+    sender = update.message.from_user
+    replier = getattr(update.message.reply_to_message, 'from_user', None)
+    senderID = str(sender.id)
+    if ( replier is not None):
+        replierID = str(replier.id)
+        replierName = str(replier.first_name)
+        for admin in admins:
+            admin = str(admin)
+            if admin == sender:
+                if not checkAdmin(replierID):
+                    addAdmin(replierID, replierName)
+    else:
+        # DEBUG
+        update.message.reply_text("Non era una risposta a qualcosa")
 
 
 def checkifRepMsg(update: Update, context: CallbackContext) -> None:
@@ -116,6 +146,8 @@ def checkifRepMsg(update: Update, context: CallbackContext) -> None:
     
 
 def main() -> None:
+    if not checkAdmin(OWNER_ID):
+        addAdmin(OWNER_ID, "owner")
     initAdmins()
     # Create the Updater and pass it your bot's token.
     TOKEN = os.getenv('TOKEN')
@@ -123,6 +155,8 @@ def main() -> None:
     dispatcher = updater.dispatcher
     
     dispatcher.add_handler(CommandHandler("classifica", leaderboardCommand))
+
+    dispatcher.add_handler(CommandHandler("addMauritioAdmin", addAdminCommand))
 
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, checkifRepMsg))
     # Start the Bot
