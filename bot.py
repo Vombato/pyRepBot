@@ -104,14 +104,15 @@ def addAdminCommand(update: Update, context: CallbackContext) -> None:
     sender = update.message.from_user
     replier = getattr(update.message.reply_to_message, 'from_user', None)
     senderID = str(sender.id)
-    if ( replier is not None):
+    if (replier is not None):
         replierID = str(replier.id)
+        print("Called addAdmin command for user: "+replierID)
         replierName = str(replier.first_name)
-        for admin in admins:
-            admin = str(admin)
-            if admin == sender:
+        if senderID == OWNER_ID:
                 if not checkAdmin(replierID):
                     addAdmin(replierID, replierName)
+                    print("Aggiunto Admin: "+replierName)
+                    update.message.reply_text("Aggiunto Admin: "+replierName)
     else:
         # DEBUG
         update.message.reply_text("Non era una risposta a qualcosa")
@@ -143,6 +144,8 @@ def checkifRepMsg(update: Update, context: CallbackContext) -> None:
         else:
             # DEBUG
             update.message.reply_text("Non era una risposta a qualcosa")
+
+
     
 
 def main() -> None:
