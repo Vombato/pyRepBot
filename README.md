@@ -8,6 +8,7 @@ Table of Contents
   * [Requirements](#Requirements)
   * [Installation](#Installation)
   * [Usage](#Usage)
+  * [Bot Commands](#Commands)
 
 ## Requirements
 
@@ -49,6 +50,31 @@ If you want to run the bot with in the background you can do:
 nohup python3 bot.py &
 ```
 
-*WORK_IN PROGRESS*
+## **Commands**
+
+### Admin commands
+
+### **Add Reputation**
+
+Send `+++` as a reply to the user's message
+
+###  **Remove Reputation**
+
+Send `+++` as a reply to the user's message
+
+### **Display the leaderboard**
+
+`/classifica`
+
+-------
+### Owner commands
+
+
+### **Add Admin**
+
+`/AddAdmin`  as a reply to the user's message
+
+---
+# WORK IN PROGRESS
 
 *Enjoy!*
