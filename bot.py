@@ -5,11 +5,13 @@
 
 import logging
 import os
+import random
+import json
 
 import pymongo as mongo
 from dotenv import load_dotenv, find_dotenv
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 load_dotenv(find_dotenv())
 
@@ -30,6 +32,12 @@ client = mongo.MongoClient(
 db = client.repbot.users
 
 admins = []
+
+def get_rand_quote():
+    with open("quotes.json", "rb") as file:
+        data = json.load(file)
+
+    return random.choice(data["quotes"])
 
 
 def get_user(id_to_find, name):
@@ -90,7 +98,7 @@ def init_admins():
 
 # Telegram Chat Commands
 
-def leaderboard_cmd(update: Update) -> None:
+def leaderboard_cmd(update: Update, context: CallbackContext) -> None:
     sender = str(update.message.from_user.id)
     for admin in admins:
         admin = str(admin)
@@ -106,7 +114,7 @@ def leaderboard_cmd(update: Update) -> None:
             update.message.reply_text(msg)
 
 
-def add_admin_cmd(update: Update) -> None:
+def add_admin_cmd(update: Update, context: CallbackContext) -> None:
     sender = update.message.from_user
     replier = getattr(update.message.reply_to_message, 'from_user', None)
     sender_id = str(sender.id)
@@ -123,8 +131,13 @@ def add_admin_cmd(update: Update) -> None:
         # DEBUG
         update.message.reply_text("Non era una risposta a qualcosa")
 
+def send_citation(update: Update, context: CallbackContext) -> None:
+    for admin in admins:
+        if str(admin) == str(update.message.from_user.id):
+            update.message.reply_text("<i>\""+get_rand_quote()+"\"</i> - Sen. Mauritio Reputatio", parse_mode='HTML')
 
-def rep_cmd(update: Update) -> None:
+
+def rep_cmd(update: Update, context: CallbackContext) -> None:
     if update.message.text in ("+++", "---"):
         sender = update.message.from_user.id
         replier = getattr(update.message.reply_to_message, 'from_user', None)
@@ -168,6 +181,8 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("classifica", leaderboard_cmd))
 
     dispatcher.add_handler(CommandHandler("addAdmin", add_admin_cmd))
+
+    dispatcher.add_handler(CommandHandler("citazione", send_citation))
 
     dispatcher.add_handler(MessageHandler(
         Filters.text & ~Filters.command, rep_cmd))
