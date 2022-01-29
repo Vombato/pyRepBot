@@ -3,15 +3,16 @@
 # pylint: disable=broad-except
 # pylint: disable=missing-docstring
 
+import json
 import logging
 import os
 import random
-import json
 
 import pymongo as mongo
-from dotenv import load_dotenv, find_dotenv
+from dotenv import find_dotenv, load_dotenv
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import (CallbackContext, CommandHandler, Filters,
+                          MessageHandler, Updater)
 
 load_dotenv(find_dotenv())
 
@@ -134,7 +135,8 @@ def add_admin_cmd(update: Update, context: CallbackContext) -> None:
 def send_citation(update: Update, context: CallbackContext) -> None:
     for admin in admins:
         if str(admin) == str(update.message.from_user.id):
-            update.message.reply_text("<i>\""+get_rand_quote()+"\"</i> - Sen. Mauritio Reputatio", parse_mode='HTML')
+            update.message.reply_text("<i>\""+get_rand_quote()+"\"</i> - Sen. Mauritio Reputatio",
+             parse_mode='HTML')
 
 
 def rep_cmd(update: Update, context: CallbackContext) -> None:
