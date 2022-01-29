@@ -1,6 +1,8 @@
 # pyRepBot - [Telegram](https://www.telegram.org/) Private Group Reputation Bot
 
+[![Pylint](https://github.com/Vombato/pyRepBot/actions/workflows/pylint.yml/badge.svg)](https://github.com/Vombato/pyRepBot/actions/workflows/pylint.yml)
 
+---
 
 Table of Contents
 -----------------
