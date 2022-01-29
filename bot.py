@@ -95,7 +95,7 @@ def init_admins():
         admins.append(i["user_id"])
 
 
-# Commands
+# Telegram Chat Commands
 
 def leaderboard_cmd(update: Update) -> None:
     sender = str(update.message.from_user.id)
