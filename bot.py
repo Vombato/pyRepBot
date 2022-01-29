@@ -1,16 +1,14 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # pylint: disable=C0116,W0613
+# pylint: disable=broad-except
 
 import logging
 import os
-import json
-import pymongo as Mongo
 
+import pymongo as mongo
 from dotenv import load_dotenv, find_dotenv
-
-from telegram import Update, ForceReply
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 load_dotenv(find_dotenv())
 
@@ -26,70 +24,70 @@ OWNER_ID = os.environ.get('OWNER_ID')
 MONGODB_USER = os.environ.get('MONGODB_USER')
 MONGODB_PSW = os.environ.get('MONGODB_PSW')
 MONGODB_SERVER = os.environ.get('MONGODB_SERVER')
-client = Mongo.MongoClient(
-    "mongodb+srv://"+MONGODB_USER+":"+MONGODB_PSW+MONGODB_SERVER)
+client = mongo.MongoClient(
+    "mongodb+srv://" + MONGODB_USER + ":" + MONGODB_PSW + MONGODB_SERVER)
 db = client.repbot.users
 
 admins = []
 
 
-def getUser(idToFind, name):
-    res = db.find_one({"user_id": idToFind})
+def get_user(id_to_find, name):
+    res = db.find_one({"user_id": id_to_find})
     if res is None:
         print("Found no one, inserting it")
-        insertNew(idToFind, name)
-        res = getUser(idToFind, name)
+        insert_new(id_to_find, name)
+        res = get_user(id_to_find, name)
     print("Found user: " + str(res))
     return res
 
 
-def insertNew(idtoInsert, name):
-    db.insert_one({"user_id": idtoInsert, "name": name, "rep": 0, "lvl": 0})
+def insert_new(id_to_insert, name):
+    db.insert_one({"user_id": id_to_insert, "name": name, "rep": 0, "lvl": 0})
 
 
-def addRep(usrToUpdate):
+def inc_rep(usr_to_update):
     try:
-        newrep = usrToUpdate["rep"] + 1
-        result = db.update_one({"user_id": usrToUpdate["user_id"]}, {
-                               "$set": {"rep": newrep}})
-    except:
-        print("Error while adding rep")
+        newrep = usr_to_update["rep"] + 1
+        db.update_one({"user_id": usr_to_update["user_id"]}, {
+            "$set": {"rep": newrep}})
+    except Exception as e:
+        print("Error {0} while adding rep: {1}".format(e.message, e.args))
 
 
-def decRep(usrToUpdate):
+def dec_rep(usr_to_update):
     try:
-        newrep = usrToUpdate["rep"] - 1
-        result = db.update_one({"user_id": usrToUpdate["user_id"]}, {
-                               "$set": {"rep": newrep}})
-    except:
-        print("Error while adding rep")
+        newrep = usr_to_update["rep"] - 1
+        db.update_one({"user_id": usr_to_update["user_id"]}, {
+            "$set": {"rep": newrep}})
+    except Exception as e:
+        print("Error {0} while decrementing rep: {1}".format(e.message, e.args))
 
 
-def updateName(idtoUpdate, name):
+def update_name(id_to_update, name_to_update):
     try:
-        result = db.update_one({"user_id": idtoUpdate},
-                               {"$set": {"name": name}})
-    except:
-        print("Error while updating name")
+        db.update_one({"user_id": id_to_update},
+                      {"$set": {"name": name_to_update}})
+    except Exception as e:
+        print("Error {0} while updating name: {1}".format(e.message, e.args))
 
 
-def getLeaderboard():
+def get_leaderboard():
     res = db.find().sort("rep", -1)
     return res
 
 
-def checkAdmin(id):
-    res = client.repbot.admins.find_one({"user_id": id})
+def check_admin(id_to_check):
+    res = client.repbot.admins.find_one({"user_id": id_to_check})
     if res is not None:
         return True
     return False
 
 
-def addAdmin(id, name):
-    client.repbot.admins.insert_one({"user_id": id, "name": name})
+def add_admin(id_to_add, name_to_add):
+    client.repbot.admins.insert_one({"user_id": id_to_add, "name": name_to_add})
 
 
-def initAdmins():
+def init_admins():
     res = client.repbot.admins.find()
     print(str(res))
     for i in res:
@@ -99,64 +97,66 @@ def initAdmins():
 
 # Commands
 
-def leaderboardCommand(update: Update, context: CallbackContext) -> None:
+def leaderboard_cmd(update: Update) -> None:
     sender = str(update.message.from_user.id)
     for admin in admins:
         admin = str(admin)
         if admin == sender:
-            elems = getLeaderboard()
+            elems = get_leaderboard()
             msg = "Classifica Reputazione\n\n"
             count = 1
             for elem in elems[:10]:
                 msg = msg + \
-                    str(count)+". "+str(elem["name"]) + \
-                    "  ✨Punteggio: " + str(elem["rep"])+"\n"
+                      str(count) + ". " + str(elem["name"]) + \
+                      "  ✨Punteggio: " + str(elem["rep"]) + "\n"
                 count = count + 1
             update.message.reply_text(msg)
 
 
-def addAdminCommand(update: Update, context: CallbackContext) -> None:
+def add_admin_cmd(update: Update) -> None:
     sender = update.message.from_user
     replier = getattr(update.message.reply_to_message, 'from_user', None)
-    senderID = str(sender.id)
-    if (replier is not None):
-        replierID = str(replier.id)
-        print("Called addAdmin command for user: "+replierID)
-        replierName = str(replier.first_name)
-        if senderID == OWNER_ID:
-            if not checkAdmin(replierID):
-                addAdmin(replierID, replierName)
-                print("Aggiunto Admin: "+replierName)
-                update.message.reply_text("Aggiunto Admin: "+replierName)
+    sender_id = str(sender.id)
+    if replier is not None:
+        replier_id = str(replier.id)
+        print("Called addAdmin command for user: " + replier_id)
+        replier_name = str(replier.first_name)
+        if sender_id == OWNER_ID:
+            if not check_admin(replier_id):
+                add_admin(replier_id, replier_name)
+                print("Aggiunto Admin: " + replier_name)
+                update.message.reply_text("Aggiunto Admin: " + replier_name)
     else:
         # DEBUG
         update.message.reply_text("Non era una risposta a qualcosa")
 
 
-def checkifRepMsg(update: Update, context: CallbackContext) -> None:
+def rep_cmd(update: Update) -> None:
     if update.message.text == "+++" or update.message.text == "---":
         sender = update.message.from_user.id
         replier = getattr(update.message.reply_to_message, 'from_user', None)
-        if (replier is not None):
-            replierID = replier.id
-            replierName = replier.first_name
+        if replier is not None:
+            replier_id = replier.id
+            replier_name = replier.first_name
             sender = str(sender)
-            replierID = str(replierID)
+            replier_id = str(replier_id)
             for admin in admins:
                 admin = str(admin)
                 if admin == sender:
-                    usr = getUser(replierID, replierName)
-                    repNow = usr["rep"]
+                    usr = get_user(replier_id, replier_name)
+                    rep_now = usr["rep"]
                     if update.message.text == "+++":
-                        addRep(usr)
+                        inc_rep(usr)
                         update.message.reply_text(
-                            "🆙 - Aumentata la ✨ reputazione ✨  di " + replierName + " da " + str(repNow) + " 👉 " + str(repNow+1) + "!")
+                            "🆙 - Aumentata la ✨ reputazione ✨  di " + replier_name + " da " + str(
+                                rep_now) + " 👉 " + str(rep_now + 1) + "!")
                     else:
-                        decRep(usr)
+                        dec_rep(usr)
                         update.message.reply_text(
-                            "⚠️ - Diminuita la ✨ reputazione ✨  di " + replierName + " da " + str(repNow) + " 👉 " + str(repNow-1) + "!")
-                    if replierName != usr["name"]:
-                        updateName(replierID, replierName)
+                            "⚠️ - Diminuita la ✨ reputazione ✨  di " + replier_name + " da " + str(
+                                rep_now) + " 👉 " + str(rep_now - 1) + "!")
+                    if replier_name != usr["name"]:
+                        update_name(replier_id, replier_name)
                     return
         else:
             # DEBUG
@@ -164,20 +164,20 @@ def checkifRepMsg(update: Update, context: CallbackContext) -> None:
 
 
 def main() -> None:
-    if not checkAdmin(OWNER_ID):
-        addAdmin(OWNER_ID, "owner")
-    initAdmins()
+    if not check_admin(OWNER_ID):
+        add_admin(OWNER_ID, "owner")
+    init_admins()
     # Create the Updater and pass it your bot's token.
-    TOKEN = os.getenv('TOKEN')
-    updater = Updater(TOKEN)
+    bot_token = os.getenv('TOKEN')
+    updater = Updater(bot_token)
     dispatcher = updater.dispatcher
 
-    dispatcher.add_handler(CommandHandler("classifica", leaderboardCommand))
+    dispatcher.add_handler(CommandHandler("classifica", leaderboard_cmd))
 
-    dispatcher.add_handler(CommandHandler("addAdmin", addAdminCommand))
+    dispatcher.add_handler(CommandHandler("addAdmin", add_admin_cmd))
 
     dispatcher.add_handler(MessageHandler(
-        Filters.text & ~Filters.command, checkifRepMsg))
+        Filters.text & ~Filters.command, rep_cmd))
     # Start the Bot
     updater.start_polling()
     updater.idle()
