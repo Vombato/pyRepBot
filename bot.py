@@ -1,6 +1,7 @@
 # !/usr/bin/env python
 # pylint: disable=C0116,W0613
 # pylint: disable=broad-except
+# pylint: disable=missing-docstring
 
 import logging
 import os
@@ -46,29 +47,20 @@ def insert_new(id_to_insert, name):
 
 
 def inc_rep(usr_to_update):
-    try:
-        newrep = usr_to_update["rep"] + 1
-        db.update_one({"user_id": usr_to_update["user_id"]}, {
-            "$set": {"rep": newrep}})
-    except Exception as e:
-        print("Error {0} while adding rep: {1}".format(e.message, e.args))
+    newrep = usr_to_update["rep"] + 1
+    db.update_one({"user_id": usr_to_update["user_id"]}, {
+        "$set": {"rep": newrep}})
 
 
 def dec_rep(usr_to_update):
-    try:
-        newrep = usr_to_update["rep"] - 1
-        db.update_one({"user_id": usr_to_update["user_id"]}, {
-            "$set": {"rep": newrep}})
-    except Exception as e:
-        print("Error {0} while decrementing rep: {1}".format(e.message, e.args))
+    newrep = usr_to_update["rep"] - 1
+    db.update_one({"user_id": usr_to_update["user_id"]}, {
+        "$set": {"rep": newrep}})
 
 
 def update_name(id_to_update, name_to_update):
-    try:
-        db.update_one({"user_id": id_to_update},
-                      {"$set": {"name": name_to_update}})
-    except Exception as e:
-        print("Error {0} while updating name: {1}".format(e.message, e.args))
+    db.update_one({"user_id": id_to_update},
+                  {"$set": {"name": name_to_update}})
 
 
 def get_leaderboard():
@@ -84,7 +76,8 @@ def check_admin(id_to_check):
 
 
 def add_admin(id_to_add, name_to_add):
-    client.repbot.admins.insert_one({"user_id": id_to_add, "name": name_to_add})
+    client.repbot.admins.insert_one(
+        {"user_id": id_to_add, "name": name_to_add})
 
 
 def init_admins():
@@ -107,8 +100,8 @@ def leaderboard_cmd(update: Update) -> None:
             count = 1
             for elem in elems[:10]:
                 msg = msg + \
-                      str(count) + ". " + str(elem["name"]) + \
-                      "  ✨Punteggio: " + str(elem["rep"]) + "\n"
+                    str(count) + ". " + str(elem["name"]) + \
+                    "  ✨Punteggio: " + str(elem["rep"]) + "\n"
                 count = count + 1
             update.message.reply_text(msg)
 
@@ -132,7 +125,7 @@ def add_admin_cmd(update: Update) -> None:
 
 
 def rep_cmd(update: Update) -> None:
-    if update.message.text == "+++" or update.message.text == "---":
+    if update.message.text in ("+++", "---"):
         sender = update.message.from_user.id
         replier = getattr(update.message.reply_to_message, 'from_user', None)
         if replier is not None:
