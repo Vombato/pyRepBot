@@ -1,6 +1,6 @@
 # pyRepBot - [Telegram](https://www.telegram.org/) Private Group Reputation Bot
 
-[![Pylint](https://github.com/Vombato/pyRepBot/actions/workflows/pylint.yml/badge.svg)](https://github.com/Vombato/pyRepBot/actions/workflows/pylint.yml)
+[![Pylint](https://github.com/Vombato/pyRepBot/actions/workflows/pylint.yml/badge.svg)](https://github.com/Vombato/pyRepBot/actions/workflows/pylint.yml) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 ---
 
@@ -79,4 +79,6 @@ Send `+++` as a reply to the user's message
 ---
 # WORK IN PROGRESS
 
-*Enjoy!*
+*Some strings and commands are still in italian, for the moment I have no plans to translate them for internatonalization, if you wish to do so you are welcome to make a **PR** or **fork** the project!*
+
+### *Enjoy!*
