@@ -62,7 +62,7 @@ Send `+++` as a reply to the user's message
 
 ###  **Remove Reputation**
 
-Send `+++` as a reply to the user's message
+Send `---` as a reply to the user's message
 
 ### **Display the leaderboard**
 
