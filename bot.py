@@ -96,7 +96,7 @@ def get_leaderboard():
 
 
 def tag_user(user_id, name):
-    return "<a href='tg://user?id={}'>{}</a>".format(user_id, name)
+    return "<a href='tg://user?id=" + user_id + "'>" + name + "</a>"
 
 
 def print_top_10():
