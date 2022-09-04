@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import random
+import datetime
 
 import pymongo as mongo
 from dotenv import find_dotenv, load_dotenv
@@ -40,6 +41,23 @@ def get_rand_quote():
 
     return random.choice(data["quotes"])
 
+def get_month_name_ita():
+    month = datetime.datetime.now().strftime("%B")
+    months = {
+        "January": "Gennaio",
+        "February": "Febbraio",
+        "March": "Marzo",
+        "April": "Aprile",
+        "May": "Maggio",
+        "June": "Giugno",
+        "July": "Luglio",
+        "August": "Agosto",
+        "September": "Settembre",
+        "October": "Ottobre",
+        "November": "Novembre",
+        "December": "Dicembre"
+    }
+    return months[month]
 
 def get_user(id_to_find, name):
     res = db.find_one({"user_id": id_to_find})
@@ -77,6 +95,23 @@ def get_leaderboard():
     return res
 
 
+def tag_user(user_id, name):
+    return "<a href='tg://user?id={}'>{}</a>".format(user_id, name)
+
+
+def print_top_10():
+    elems = get_leaderboard()
+    msg = "🎉 Classifica Reputazione di " + get_month_name_ita() + "\n\n"
+    count = 1
+    for elem in elems[:10]:
+        if elem["rep"] != 0:
+            msg = msg + \
+            str(count) + ". " + tag_user(str(elem["user_id"]), str(elem["name"])) + \
+            "  ✨Punteggio: " + str(elem["rep"]) + "\n"
+            count = count + 1
+    return msg
+
+
 def check_admin(id_to_check):
     res = client.repbot.admins.find_one({"user_id": id_to_check})
     if res is not None:
@@ -108,12 +143,21 @@ def leaderboard_cmd(update: Update, context: CallbackContext) -> None:
             msg = "Classifica Reputazione\n\n"
             count = 1
             for elem in elems[:10]:
-                msg = msg + \
+                if elem["rep"] != 0:
+                    msg = msg + \
                     str(count) + ". " + str(elem["name"]) + \
                     "  ✨Punteggio: " + str(elem["rep"]) + "\n"
-                count = count + 1
+                    count = count + 1
+                if count == 1:
+                    msg = "Non ci sono ancora utenti con reputazione questo mese"
             update.message.reply_text(msg)
 
+def reset_leaderboard(update: Update, context: CallbackContext) -> None:
+    sender = str(update.message.from_user.id)
+    if OWNER_ID == sender:
+        update.message.reply_text(print_top_10(), parse_mode='HTML')
+        db.update_many({}, {"$set": {"rep": 0}})
+        update.message.reply_text("Classifica resettata")
 
 def add_admin_cmd(update: Update, context: CallbackContext) -> None:
     sender = update.message.from_user
@@ -130,7 +174,7 @@ def add_admin_cmd(update: Update, context: CallbackContext) -> None:
                 update.message.reply_text("Aggiunto Admin: " + replier_name)
     else:
         # DEBUG
-        update.message.reply_text("Non era una risposta a qualcosa")
+        update.message.reply_text("Non era una risposta ad un messaggio")
 
 def send_citation(update: Update, context: CallbackContext) -> None:
     for admin in admins:
@@ -185,6 +229,8 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("addAdmin", add_admin_cmd))
 
     dispatcher.add_handler(CommandHandler("citazione", send_citation))
+
+    dispatcher.add_handler(CommandHandler("resetClassifica", reset_leaderboard))
 
     dispatcher.add_handler(MessageHandler(
         Filters.text & ~Filters.command, rep_cmd))
