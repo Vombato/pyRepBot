@@ -74,7 +74,11 @@ Send `---` as a reply to the user's message
 
 ### **Add Admin**
 
-`/AddAdmin`  as a reply to the user's message
+`/addAdmin`  as a reply to the user's message
+
+### **Close Monthly Leaderboard
+
+`/resetClassifica` prints and tags every member in the leaderboard and then resets everything.
 
 ---
 # WORK IN PROGRESS
