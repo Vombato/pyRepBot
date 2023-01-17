@@ -22,5 +22,5 @@ jobs:
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker image and push
       run: |
-        docker build . --file Dockerfile --load --tag ${{secrets.DOCKER_USER}}/pyrepbot:$(date +%s) 
+        docker build --load -t ${{secrets.DOCKER_USER}}/pyrepbot:$(date +%s) 
         docker push ${{secrets.DOCKER_USER}}/pyrepbot
