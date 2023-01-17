@@ -12,7 +12,7 @@ import datetime
 import pymongo as mongo
 from dotenv import find_dotenv, load_dotenv
 from telegram import Update
-from telegram.ext import (CallbackContext, CommandHandler, Filters,
+from telegram.ext import (CallbackContext, CommandHandler, filters,
                           MessageHandler, Updater)
 
 load_dotenv(find_dotenv())
@@ -233,7 +233,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("resetClassifica", reset_leaderboard))
 
     dispatcher.add_handler(MessageHandler(
-        Filters.text & ~Filters.command, rep_cmd))
+        filters.text & ~filters.command, rep_cmd))
     # Start the Bot
     updater.start_polling()
     updater.idle()
