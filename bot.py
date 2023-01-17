@@ -221,7 +221,7 @@ def main() -> None:
     init_admins()
     # Create the Updater and pass it your bot's token.
     bot_token = os.getenv('TOKEN')
-    updater = Updater(bot_token, pass_job_queue=True)
+    updater = Updater(bot_token)
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("classifica", leaderboard_cmd))
