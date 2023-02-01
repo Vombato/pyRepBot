@@ -57,7 +57,12 @@ def get_month_name_ita():
         "November": "Novembre",
         "December": "Dicembre"
     }
-    return months[month]
+    # Return the previous month
+    if month == "January":
+        month = "December"
+    else:
+        month = months[month]
+    return month
 
 def get_user(id_to_find, name):
     res = db.find_one({"user_id": id_to_find})
